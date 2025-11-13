@@ -48,20 +48,58 @@ awscli configure
 * TBD/NA
 
 ### Executing program
-## 1- Check if website is loading
-**- TBD**
+### 1- Check if website is loading
+* Create trust policy file to run lambda function
 ```
-TBD
+aws iam create-role \
+  --role-name lambda-website-uptime-monitor-role \
+  --assume-role-policy-document file://json/trust-policy.json
+```
+* Attach policy (above) for basic lamda execution to write to Cloudwatch logs
+```
+aws iam attach-role-policy \
+  --role-name lambda-website-uptime-monitor-role \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 ```
 
-## 2- Check how fast website loads
+* Create a python file for the lambda function code
+```
+touch website-uptime-monitor-lamda.py
+```
+
+* Zip website-uptime-monitor-lamda.py to zip file to be used in aws lambda
+```
+zip function.zip website-uptime-monitor-lamda.py
+```
+
+* Create the lamda function in aws lambda (get role = arn of iam user executing function)
+```
+aws lambda create-function \
+  --function-name websiteUptimeMonitor \
+  --runtime python3.12 \
+  --role arn:aws:iam::697227439720:role/lambda-cost-comparison-role \
+  --handler website-uptime-monitor-lamda.lambda_handler \
+  --zip-file fileb://function.zip
+```
+
+* Test the lamda functioon - print output to response.json file
+```
+aws lambda invoke \
+  --function-name websiteUptimeMonitor \
+  --payload '{}' \
+  response.json
+
+cat response.json
+```
+
+### 2- Check how fast website loads
 * Run script to upload to S3 (Execute previous step first)
 **- TBD**
 ```
 TBD
 ``` 
 
-## 3- Check if website is showing the right content
+### 3- Check if website is showing the right content
 **- TBD**
 ```
 TBD
