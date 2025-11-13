@@ -1,5 +1,6 @@
 import json
 import urllib3
+import time
 
 http = urllib3.PoolManager()
 
@@ -9,7 +10,12 @@ def lambda_handler(event, context):
     # url = event.get("url", "https://www.nilecomputing.com") # Website Down   
     
     try:
-        response = http.request("GET", url, timeout=5.0)
+        start_time = time.time()
+        response = http.request("GET", url, timeout=10.0)
+        end_time = time.time()
+
+        # Calculate response time in milliseconds
+        load_time_ms = round((end_time - start_time) * 1000, 2)
         status_code = response.status
         
         if 200 <= status_code < 400:
@@ -20,7 +26,8 @@ def lambda_handler(event, context):
         result = {
             "url": url,
             "status": status,
-            "status_code": status_code
+            "status_code": status_code,
+            "load_time" : load_time_ms
         }
         
     except Exception as e:
