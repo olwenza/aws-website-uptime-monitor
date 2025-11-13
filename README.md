@@ -94,10 +94,7 @@ cat response.json
 
 ### 2- Check how fast website loads
 * Run script to upload to S3 (Execute previous step first)
-**- TBD**
-```
-TBD
-``` 
+**- Code updated to compute response time and return in json response**
 
 ### 3- Check if website is showing the right content
 **- TBD**
