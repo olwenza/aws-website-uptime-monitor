@@ -97,10 +97,28 @@ cat response.json
 **- Code updated to compute response time and return in json response**
 
 ### 3- Check if website is showing the right content
-**- TBD**
+*  Code update to check if site showing correct content.
+* Call lamda fuction with the following content for a running site
 ```
-TBD
+{
+    "url": "https://www.abeventcenter.com",
+    "expected_text": "San Diegos most affordable event space!"
+}
 ``` 
+* Call lamda fuction with the following content for wrong content
+```
+{
+    "url": "https://www.abeventcenter.com",
+    "expected_text": "WRONG CONTENT!"
+}
+``` 
+
+* Call lamda fuction with the following content for a non running site
+```
+{
+    "url": "https://www.sdwebtech.com",
+    "expected_text": "San Diegos most affordable event space!"
+}
 
 ### 4- If any of the above checks fails, send SNS notification
 **- TBD**
