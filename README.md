@@ -82,7 +82,7 @@ aws lambda create-function \
   --zip-file fileb://function.zip
 ```
 
-* Run the lamda functioon and print output to response.json file
+* Run the lamda function and print output to response.json file
 ```
 aws lambda invoke \
   --function-name websiteUptimeMonitor \
@@ -144,11 +144,48 @@ aws iam put-role-policy \
 ```
 
 ### 5- Store all test results in DynamoDB
-**- TBD**
+* Find your Lambda execution role:
 ```
-TBD
+aws lambda get-function --function-name websiteUptimeMonitor \
+  --query "Configuration.Role"
+```
+* Use output of previous step to replace $YourRoleName and attach a managed policy
+```
+aws iam attach-role-policy \
+  --role-name $YourRoleName \
+  --policy-arn arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+```
+* Create a DynamoDB policy file giving permission to putItems/add rows to the DB
+```
+touch json/lambda-dynamodb-policy.json
+```
+
+* Attach policy to lambda execution role
+```
+aws iam put-role-policy \
+    --role-name lambda-cost-comparison-role \
+    --policy-name LambdaDynamoDBPutItemPolicy \
+    --policy-document file://json/lambda-dynamodb-policy.json
+```
+
+* Create the DynamoDB table
+```
+aws dynamodb create-table \
+  --table-name WebsiteMonitor \
+  --attribute-definitions AttributeName=id,AttributeType=S \
+  --key-schema AttributeName=id,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST
 ``` 
 
+* Deploy new code and Run the lamda function again with different options as before
+```
+aws lambda invoke \
+  --function-name websiteUptimeMonitor \
+  --payload '{}' \
+  response.json
+
+cat res
+```
 ### 6- Create S3 Dashboard showing % time up this month, Average response time & number of incidents this month
 **- TBD**
 ```
