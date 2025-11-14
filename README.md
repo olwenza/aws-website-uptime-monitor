@@ -231,7 +231,6 @@ aws iam attach-role-policy \
     --policy-arn arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
 ```
 
-
 * Create Lambda Function via CLI
 ```
 aws lambda create-function \
@@ -296,7 +295,6 @@ aws events put-targets \
 * Check s3 for dahsboard image every morning after 2:00am (e.g)
 ``` 
 s3://website-monitor-dashboard/2025/11/website-monitore-dashboard.png)
-```
 ```
 
 ## Authors
