@@ -73,3 +73,7 @@ override.tf.json
 # Terraform CLI configuration files
 .terraformrc
 terraform.rc
+
+# Project compilation files
+lambda_dashboard.zip
+lambda_dashboard/

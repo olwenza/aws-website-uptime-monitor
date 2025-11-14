@@ -187,9 +187,114 @@ aws lambda invoke \
 cat res
 ```
 ### 6- Create S3 Dashboard showing % time up this month, Average response time & number of incidents this month
-**- TBD**
+* Create a python file to build the dashboard
 ```
-TBD
+touch generate_dashboard.py
+```
+
+* Run script to create a deployment package (with dependencies)
+```
+./deploy-lambda-dash.sh
+```
+
+* Create IAM Role for Lambda
+```
+aws iam create-role \
+    --role-name LambdaDashboardRole \
+    --assume-role-policy-document '{
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {"Service": "lambda.amazonaws.com"},
+                "Action": "sts:AssumeRole"
+            }
+        ]
+    }'
+```
+
+* Attach IAM policies
+```
+# Basic execution (logs)
+aws iam attach-role-policy \
+    --role-name LambdaDashboardRole \
+    --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+# S3 Full Access (or limit to bucket)
+aws iam attach-role-policy \
+    --role-name LambdaDashboardRole \
+    --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+# DynamoDB Full Access (or limit to table)
+aws iam attach-role-policy \
+    --role-name LambdaDashboardRole \
+    --policy-arn arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+```
+
+* Create Lambda Function via CLI
+```
+aws lambda create-function \
+    --function-name GenerateWebsiteMonitorDashboard \
+    --runtime python3.12 \
+    --role arn:aws:iam::697227439720:role/LambdaDashboardRole \
+    --handler generate_dashboard.lambda_handler \
+    --zip-file fileb://dashboard_lambda.zip \
+    --timeout 60 \
+    --memory-size 512
+```
+
+* Upload file to S3 if encounter file size error - /website-monitor-ivan
+```
+aws s3 cp dashboard_lambda.zip s3://website-monitor-ivan/dashboard_lambda.zip
+```
+
+* Create Lambda function from S3
+```
+aws lambda create-function \
+  --function-name website-dash-board-lambda \
+  --runtime python3.11 \
+  --role arn:aws:iam::697227439720:role/lambda-cost-comparison-role \
+  --handler generate_dashboard.lambda_handler \
+  --code S3Bucket=website-monitor-ivan,S3Key=dashboard_lambda.zip
+```
+
+* Test Lambda function with empty payload
+```
+aws lambda invoke \
+    --function-name website-dash-board-lambda \
+    --payload '{}' \
+    output.json
+```
+
+* Check s3 for dahsboard image at
+```
+s3://website-monitor-dashboard/2025/11/website-monitore-dashboard.png)
+```
+
+* Schedule and EventBright event to execute daily at 2:00am
+```
+aws events put-rule \
+    --name DailyWebsiteMonitorDashboard \
+    --schedule-expression "cron(0 2 * * ? *)"  # every day at 00:00 UTC
+```
+
+* Attach the Lambda target
+```
+aws lambda add-permission \
+    --function-name GenerateWebsiteMonitorDashboard \
+    --statement-id DailyDashboardPermission \
+    --action 'lambda:InvokeFunction' \
+    --principal events.amazonaws.com \
+    --source-arn arn:aws:events:us-east-1:697227439720:rule/DailyDashboard
+
+aws events put-targets \
+    --rule DailyDashboard \
+    --targets "Id"="1","Arn"="arn:aws:lambda:us-east-1:697227439720:function:GeneGenerateWebsiteMonitorDashboardrateDashboard"
+```
+
+* Check s3 for dahsboard image every morning after 2:00am (e.g)
+``` 
+s3://website-monitor-dashboard/2025/11/website-monitore-dashboard.png)
 ```
 
 ## Authors
